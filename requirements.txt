@@ -14,6 +14,6 @@ supabase  # database
 bcrypt  #for password authentification
 
 segno  # for QR code making
-pillow  #for deling with img
+pillowf  #for deling with img
 
 streamlit #for Frontend
