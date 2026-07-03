@@ -5,7 +5,13 @@ def style_background_home():
     <style>
                
         .stApp{
-                background: #e5eaf5 !important
+                background: #494D5F !important
+                }
+
+                .stApp div[data-testid="stColumn"]{
+                    background-color:#e5eaf5 !important;
+                    padding: 1.5rem !important;
+                    border-radius: 4rem !important;
                 }
 
     """,unsafe_allow_html=True)
@@ -38,17 +44,19 @@ def style_base_layout():
 
                 h1 {
                     font-family: 'Climate Crisis', sans-serif !important;
-                    font-size: 3.5rem !important;
-                    line-height: 1.1 !important;
+                    font-size: 2.5rem !important;
+                    line-height: 0.9 !important;
                     margin-bottom: 0rem !important;
+                    
                 
                 }
 
                 h2 {
                     font-family: 'Climate Crisis', sans-serif !important;
-                    font-size: 3.5rem !important;
-                    line-height: 1.1 !important;
+                    font-size: 2rem !important;
+                    line-height: 0.9 !important;
                     margin-bottom: 0rem !important;
+                    color: black !important;
                 
                 }
 
