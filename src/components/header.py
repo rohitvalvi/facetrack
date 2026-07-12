@@ -41,4 +41,21 @@ def header_home():
     </p>
     """, unsafe_allow_html=True)
 
-    
+def header_dashboard():
+    logo_path = Path(__file__).parent.parent / "assets" / "logo.png"
+
+    try:
+        # Check if file exists and has content
+        if logo_path.exists() and logo_path.stat().st_size > 0:
+            with open(logo_path, "rb") as f:
+                encoded = base64.b64encode(f.read()).decode()
+            
+            st.markdown(f"""
+            <div style="display: flex; justify-content: center; padding: 20px 0;">
+                <img src="data:image/png;base64,{encoded}" style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.warning("⚠️ Logo file is empty or missing. Please add a logo image to: src/assets/logo.png")
+    except Exception as e:
+        st.error(f"Error loading logo: {str(e)}")

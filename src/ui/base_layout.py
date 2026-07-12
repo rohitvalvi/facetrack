@@ -20,7 +20,7 @@ def style_background_dashboard():
     st.markdown("""
     <style>
                 .stApp{
-                background: #e5eaf5 !important
+                background: #E2E3FF !important
                 }
                 </style>
 
@@ -88,6 +88,8 @@ def style_base_layout():
                 button:hover{
                     transform:scale(1.5)
                 }
+                
+
                 </style>
 
     """,unsafe_allow_html=True)
