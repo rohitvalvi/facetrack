@@ -44,7 +44,8 @@ def teacher_screen_login():
     with c2:
         st.button("Back",type="secondary",key="LoginBackButton", shortcut="control+backspace", on_click=lambda: st.session_state.update({'login_type': None}))
 
-    st.header("Login")
+    st.header("Login", text_alignment="center")
+
     teacher_username = st.text_input("Enter Username", placeholder="name")
     st.markdown("<br>", unsafe_allow_html=True)
     teacher_password = st.text_input("Enter Password", type="password", placeholder="password")
@@ -95,7 +96,7 @@ def teacher_screen_register():
     with c2:
         st.button("Back",type="secondary",key="LoginBackButton", shortcut="control+backspace", on_click=lambda: st.session_state.update({'login_type': None}))
     
-    st.header("Register For Teacher")
+    st.header("Register For Teacher", text_alignment='center')
     teacher_username = st.text_input("Enter Username", placeholder="username")
     st.markdown("<br>", unsafe_allow_html=True)
 
