@@ -17,3 +17,6 @@ segno  # for QR code making
 pillowf  #for deling with img
 
 streamlit #for Frontend
+
+librosa   // Audio file edit and all things
+resemblyzer  //make embedding for voice
