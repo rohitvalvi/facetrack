@@ -1,0 +1,22 @@
+import streamlit as st
+from src.database.db import create_subject
+
+
+@st.dialog("Create New Subject")
+def create_subject_dialog(teacher_id):
+    st.write("Enter Details of Subjects")
+
+    sub_id = st.text_input("Subject Code", placeholder='CS101')
+    sub_name = st.text_input("Subject Name", placeholder='Artificial intelligence')
+    sub_section = st.text_input("Section", placeholder='A')
+
+    if st.button("Create Now" , type='primary', width='stretch'):
+        if sub_id and sub_name and sub_section:
+            try:
+                create_subject(sub_id,sub_name,sub_name)
+                st.toast("Subject Created Sucessfully!")
+                st.rerun()
+            except Exception as e:
+                st.error("Error: {str(e)}")
+        else:
+            st.warning("Please fill All the fields")
