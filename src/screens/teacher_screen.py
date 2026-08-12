@@ -1,10 +1,12 @@
 import streamlit as st
 from src.components.header import header_dashboard
 from src.components.footer import footer_home
-
-from src.ui.base_layout import style_background_dashboard,style_base_layout
-from src.database.db import create_teacher,check_teacher_exits, teacher_login , get_teacher_subjects
 from src.components.dialog_create_subject import create_subject_dialog
+from src.components.dialog_share_subject import share_subject_dialog
+from src.components.subject_card import subject_card
+from src.ui.base_layout import style_background_dashboard,style_base_layout
+from src.database.db import create_teacher, check_teacher_exits, teacher_login, get_teachers_subjects
+from src.components.subject_card import subject_card
 
 
 def teacher_screen():
@@ -95,25 +97,28 @@ def teacher_tab_manage_subjects():
 
 # showing all subjects
 
-    subjects = get_teacher_subjects(teacher_id)
+    subjects = get_teachers_subjects(teacher_id)
     if subjects:
         for sub in subjects:
             stats = [
-                ("🙋🏻", "students", sub['total_students'])
-                ("🕰️", "classes", sub['total_classes'])
+                ("🙋🏻", "students", sub.get('total_students', 0)),
+                ("🕰️", "classes", sub.get('total_classes', sub.get('total_class', 0))),
             ]
-        def share_btn():
-            if st.button(f"share Code: {sub['name']}",key=f"share_{sub['subject_code']}",icon=":material/share:"):
-                share_subject_dailog(sub['name'], sub['subject_code'])
-            st.space()
 
-        subject_card(
-            name= sub['name'],
-            code  = sub['code'],
-            section = sub['section'],
-            stats = stats,
-            footer_callback = share_btn
-        )
+            def share_btn(sub=sub):
+                subject_name = sub.get('name', 'Subject')
+                subject_code = sub.get('subject_code') or sub.get('sub_code') or sub.get('code') or sub.get('sub_id') or ''
+                if st.button(f"share Code: {subject_name}", key=f"share_{subject_code}", icon=":material/share:"):
+                    share_subject_dialog(subject_name, subject_code)
+                st.space()
+
+            subject_card(
+                name=sub.get('name', 'Subject'),
+                code=sub.get('subject_code') or sub.get('sub_code') or sub.get('code') or sub.get('sub_id') or '',
+                section=sub.get('section', ''),
+                stats=stats,
+                footer_callback=share_btn,
+            )
     else:
         st.info("No Subjects are Found. Create Above")
 

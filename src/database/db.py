@@ -37,23 +37,59 @@ def create_student(new_name,face_embedding=None,voice_embedding=None):
     response = supabase.table("student").insert(data).execute()
     return response.data
 
-def create_subjects(sub_code,sub_id,section,teacher_id):
-    data = {"sub_code":sub_code,"sub_id":sub_id,"section":section,"teacher_id":teacher_id}
-    response = supabase.table("subjects").insert(data).execute()
-    return response.data
+def create_subject(sub_code, sub_name, section, teacher_id):
+    payloads = [
+        {"sub_code": sub_code, "name": sub_name, "section": section, "teacher_id": teacher_id},
+        {"code": sub_code, "name": sub_name, "section": section, "teacher_id": teacher_id},
+        {"sub_id": sub_code, "name": sub_name, "section": section, "teacher_id": teacher_id},
+        {"subject_code": sub_code, "name": sub_name, "section": section, "teacher_id": teacher_id},
+        {"name": sub_name, "section": section, "teacher_id": teacher_id},
+    ]
+
+    last_error = None
+    for data in payloads:
+        try:
+            response = supabase.table("subjects").insert(data).execute()
+            return response.data
+        except Exception as exc:
+            last_error = exc
+            message = str(exc).lower()
+            if "column" in message and "could not find" in message:
+                continue
+            raise
+
+    raise last_error
+
+# Backward-compatible alias used by older code.
+def create_subjects(sub_code, sub_id, section, teacher_id):
+    return create_subject(sub_code, sub_id, section, teacher_id)
+
 
 def get_teachers_subjects(teacher_id):
-    response = supabase.table("subjects").select("*, subject_students(count),attendance_log(timestamp)").eq("teacher_id", teacher_id).execute
-    subjects = response.data
+    response = supabase.table("subjects").select("*, subject_students(count),attendance_log(timestamp)").eq("teacher_id", teacher_id).execute()
+    subjects = response.data or []
 
     for sub in subjects:
+        subject_code = (
+            sub.get("sub_code")
+            or sub.get("code")
+            or sub.get("sub_id")
+            or sub.get("subject_code")
+            or ""
+        )
+        sub['subject_code'] = subject_code
         sub['total_students'] = sub.get("subject_students", [{}])[0].get('count', 0) if sub.get('subject_students') else 0
         attendance = sub.get('attendance_log', [])
-        unique_session = len(set(log['timestamp'] for log in attendance))
+        unique_session = len(set(log['timestamp'] for log in attendance if log.get('timestamp')))
+        sub['total_classes'] = unique_session
         sub['total_class'] = unique_session
 
         sub.pop('subject_students', None)
         sub.pop('attendance_log', None)
 
     return subjects
+
+
+def get_teacher_subjects(teacher_id):
+    return get_teachers_subjects(teacher_id)
 

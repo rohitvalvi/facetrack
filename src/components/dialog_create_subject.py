@@ -10,13 +10,13 @@ def create_subject_dialog(teacher_id):
     sub_name = st.text_input("Subject Name", placeholder='Artificial intelligence')
     sub_section = st.text_input("Section", placeholder='A')
 
-    if st.button("Create Now" , type='primary', width='stretch'):
+    if st.button("Create Now", type='primary', width='stretch'):
         if sub_id and sub_name and sub_section:
             try:
-                create_subject(sub_id,sub_name,sub_name)
+                create_subject(sub_id, sub_name, sub_section, teacher_id)
                 st.toast("Subject Created Sucessfully!")
                 st.rerun()
             except Exception as e:
-                st.error("Error: {str(e)}")
+                st.error(f"Error: {str(e)}")
         else:
             st.warning("Please fill All the fields")
