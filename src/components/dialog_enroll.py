@@ -8,7 +8,7 @@ def enroll_dialog(student_id):
     st.write('Enter the Subject code provided by your teacher to enroll')
     join_code = st.text_input('Subject_Code', placeholder="eg. CS101")
 
-    if st.button('Enroll Now', type='primary',width='stretch'):
+    if st.button('Enroll Now', key='manual_enroll_confirm', type='primary',width='stretch'):
         if join_code:
             res = supabase.table('subjects').select('subject_id,name,subject_code').eq('subject_code', join_code).execute()
             if res.data:
