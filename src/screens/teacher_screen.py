@@ -14,6 +14,7 @@ import numpy as np
 from datetime import datetime
 import pandas as pd
 from src.components.dialog_attendance_results import attendance_result_dialog
+from src.components.dialog_voice_attendance import voice_attendance_dialog
 
 
 def teacher_screen():
@@ -101,7 +102,7 @@ def teacher_tab_take_attendance():
 
     subject_options = {f"{s['name']} - {s['subject_code']}": s['subject_id'] for s in subjects }
 
-    col1,col2 = st.columns([3,1])
+    col1,col2 = st.columns([3,1], vertical_alignment='bottom')
 
     with col1:
         selected_subject_labels = st.selectbox('Select Subjects', options=list(subject_options.keys()))
@@ -121,64 +122,64 @@ def teacher_tab_take_attendance():
         for idx , img in enumerate(st.session_state.attendance_images):
             with gallary_cols[idx % 4]:
                 st.image(img, width='stretch',caption=f'Photo {idx + 1}')
+    has_photos = bool(st.session_state.attendance_images)
+    c1,c2,c3 = st.columns(3)
 
-        c1,c2,c3 = st.columns(3)
+    with c1:
+        if st.button('Clear All Photos', width='stretch', type='tertiary', icon=':material/delete:',disabled= not has_photos):
+            st.session_state.attendance_images = []
+            st.rerun()
 
-        with c1:
-            if st.button('Clear All Photos', width='stretch', type='tertiary', icon=':material/delete:'):
-                st.session_state.attendance_images = []
-                st.rerun()
+    with c2:
+        
+        if st.button('Run Face Analysis', type='secondary', width='stretch', icon=':material/analytics:', disabled= not has_photos):
+            with st.spinner('Deep scanning classroom photos....'):
+                all_detected_ids = {}
 
-        with c2:
-            has_photos = bool(st.session_state.attendance_images)
-            if st.button('Run Face Analysis', type='secondary', width='stretch', icon=':material/analytics:'):
-                with st.spinner('Deep scanning classroom photos....'):
-                    all_detected_ids = {}
+                for idx , img in enumerate(st.session_state.attendance_images): 
+                    img_np = np.array(img.convert('RGB'))
+                    detected, _, _= predict_attendance(img_np)
 
-                    for idx , img in enumerate(st.session_state.attendance_images): 
-                        img_np = np.array(img.convert('RGB'))
-                        detected, _, _= predict_attendance(img_np)
+                    if detected:
+                        for sid in detected.keys():
+                            student_id = int(sid)
 
-                        if detected:
-                            for sid in detected.keys():
-                                student_id = int(sid)
+                            all_detected_ids.setdefault(student_id,[]).append(f'Photo {idx + 1}')
 
-                                all_detected_ids.setdefault(student_id,[]).append(f'Photo {idx + 1}')
+                enrolled_res = supabase.table('subject_students').select("*,student(*)").eq('subject_id', selected_subject_id).execute()
+                enrolled_students = enrolled_res.data
 
-                    enrolled_res = supabase.table('subject_students').select("*,students(*)").eq('subject_id', selected_subject_id).execute()
-                    enrolled_students = enrolled_res.data
+                if not enrolled_students:
+                    st.warning('No student enrooled in this cource')
+                else:
 
-                    if not enrolled_students:
-                        st.warning('No student enrooled in this cource')
-                    else:
+                    results , attendance_to_log = [] , []
 
-                        results , attendance_to_log = [] , []
+                    current_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
-                        current_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+                    for node in enrolled_students:
+                        student = node['student']
+                        sources = all_detected_ids.get(int(student['student_id']), [])
+                        is_present = len(sources) > 0
 
-                        for node in enrolled_students:
-                            student = node['students']
-                            sources = all_detected_ids.get(int(student['student_id']), [])
-                            is_present = len(sources) > 0
+                        results.append({
+                            "Name": student['name'],
+                            "ID": student['student_id'],
+                            "Source": ", ".join(sources) if is_present else "-",
+                            "Status": "✅ Present" if is_present else "❌ Absent"
+                        })
 
-                            results.append({
-                                "Name": student['name'],
-                                "ID": student['student_id'],
-                                "Source": ", ".join(sources) if is_present else "-",
-                                "Status": "✅ Present" if is_present else "❌ Absent"
-                            })
+                        attendance_to_log.append({
+                            'student_id':  student['student_id'],
+                            'subject_id': selected_subject_id,
+                            'timestamp':current_timestamp,
+                            'is_present': bool(is_present)
+                        })
 
-                            attendance_to_log.append({
-                                'student_id':  student['student_id'],
-                                'subject_id': selected_subject_id,
-                                'timestamp':current_timestamp,
-                                'is_present': bool(is_present)
-                            })
-
-                    attendance_result_dialog(pd.DataFrame(results), attendance_to_log)
-        with c3:
-            if st.button('Voice Atttendace', type='primary',width='stretch',icon=':material/mic:'):
-                voice_attendace_dialog()
+                attendance_result_dialog(pd.DataFrame(results), attendance_to_log)
+    with c3:
+        if st.button('Voice Atttendace', type='primary',width='stretch',icon=':material/mic:'):
+            voice_attendance_dialog(selected_subject_id)
 
 
 
