@@ -60,7 +60,7 @@ def student_dashboard():
 
         stats_map[sid]['total'] += 1
 
-        if log.get['is_present']:
+        if log.get('is_present'):
             stats_map[sid]['attended'] += 1
 
     cols = st.columns(2)
@@ -74,7 +74,7 @@ def student_dashboard():
         def unenroll_button():
             if st.button("Unenroll form this cource", key=f"unenroll_{student_id}_{sid}", type='tertiary',width='stretch', icon=':material/delete_forever:'):
                 unenroll_student_to_subject(student_id, sid)
-                st.toast(f'Unerolled from {sub['name']} succesfully')
+                st.toast(f"Unerolled from {sub['name']} succesfully")
                 st.rerun()
 
         with cols[i % 2]:
